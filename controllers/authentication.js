@@ -15,7 +15,7 @@ module.exports.register = function (req, res) {
   //   });
   //   return;
   // }
-  console.log(`${req.body.firstname} \n ${req.body.lastname} \n ${req.body.email} \n ${req.body.phone} \n ${req.body.password}`);
+  // console.log(`${req.body.firstname} \n ${req.body.lastname} \n ${req.body.email} \n ${req.body.phone} \n ${req.body.password}`);
 
 
   var user = new User();
