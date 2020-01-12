@@ -1,0 +1,6 @@
+{
+  "name": "Suhstei Backend",
+  "description": "Suhstei backend API built in Node and Express hosted on Heroku",
+  "repository": "https://github.com/Ojay-dev/suhstei-server",
+  "keywords": ["node","express"]
+}
