@@ -10,7 +10,7 @@ var auth = jwt({
   userProperty: 'payload'
 });
 
-var ctrlProfile = require('../controllers/profile'); 
+var ctrlProfile = require('../controllers/profile');
 var ctrlAuth = require('../controllers/authentication');
 
 
@@ -50,6 +50,7 @@ let Book = require('../models/book');
 
 // profile
 router.get('/profile', auth, ctrlProfile.profileRead);
+router.put('/update', auth, ctrlProfile.profileUpdate);
 
 // authentication
 router.post('/register', ctrlAuth.register);
