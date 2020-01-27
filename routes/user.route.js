@@ -15,11 +15,12 @@ var ctrlAuth = require('../controllers/authentication');
 
 
 // Multer File upload settings
-const DIR = './public/';
+const BOOKDIR = './public/books';
+// const DIR = './public/profile-img';
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, DIR);
+    cb(null, BOOKDIR);
   },
   filename: (req, file, cb) => {
     const fileName = file.originalname.toLowerCase().split(' ').join('-');
@@ -50,7 +51,7 @@ let Book = require('../models/book');
 
 // profile
 router.get('/profile', auth, ctrlProfile.profileRead);
-router.put('/update', auth, ctrlProfile.profileUpdate);
+  router.put('/update', ctrlProfile.upload.single('avatar'), auth, ctrlProfile.profileUpdate);
 
 // authentication
 router.post('/register', ctrlAuth.register);
@@ -58,7 +59,7 @@ router.post('/login', ctrlAuth.login);
 
 // POST User
 router.post('/create-new-book', upload.single('avatar'), (req, res, next) => {
-  console.log(req.body);
+  console.log(req.file);
 
   const url = req.protocol + '://' + req.get('host')
   console.log(url);
@@ -70,7 +71,7 @@ router.post('/create-new-book', upload.single('avatar'), (req, res, next) => {
 
   const book = new Book({
     _id: new mongoose.Types.ObjectId(),
-    avatar: url + '/public/' + req.file.filename,
+    avatar: `${url}/public/books/${req.file.filename}`,
     title: req.body.title,
     author: req.body.author,
     description: req.body.review

@@ -8,6 +8,9 @@ var userSchema = new mongoose.Schema({
     unique: true,
     // required: true
   },
+  avatar: {
+    type: String
+  },
   firstname: {
     type: String,
     // required: true
