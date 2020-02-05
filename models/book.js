@@ -16,6 +16,19 @@ let bookSchema = new Schema({
   description: {
     type: String
   },
+  uploader_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'users'
+  },
+  uploader_name: {
+    type: String
+  },
+  createdAt: {
+    type: Date
+  },
+  updatedAt: {
+    type: Date
+  },
 }, {
   collection: 'books'
 })

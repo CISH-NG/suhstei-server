@@ -23,8 +23,10 @@ const storage = multer.diskStorage({
     cb(null, BOOKDIR);
   },
   filename: (req, file, cb) => {
-    const fileName = file.originalname.toLowerCase().split(' ').join('-');
-    cb(null, fileName)
+    let extArray = file.mimetype.split("/");
+    let extension = extArray[extArray.length - 1];
+    const fileName = file.fieldname.toLowerCase().split(' ').join('-');
+    cb(null, fileName + '-' + Date.now() + '.' + extension)
   }
 });
 
@@ -48,18 +50,21 @@ var upload = multer({
 
 // User model
 let Book = require('../models/book');
+let User = require('../models/book');
 
 // profile
 router.get('/profile', auth, ctrlProfile.profileRead);
-  router.put('/update', ctrlProfile.upload.single('avatar'), auth, ctrlProfile.profileUpdate);
+router.get('/user/:id', auth, ctrlProfile.profileRead);
+router.put('/update', ctrlProfile.upload.single('avatar'), auth, ctrlProfile.profileUpdate);
 
 // authentication
 router.post('/register', ctrlAuth.register);
 router.post('/login', ctrlAuth.login);
 
 // POST User
-router.post('/create-new-book', upload.single('avatar'), (req, res, next) => {
+router.post('/create-new-book', upload.single('avatar'), auth, (req, res, next) => {
   console.log(req.file);
+  console.log(req.payload);
 
   const url = req.protocol + '://' + req.get('host')
   console.log(url);
@@ -74,7 +79,11 @@ router.post('/create-new-book', upload.single('avatar'), (req, res, next) => {
     avatar: `${url}/public/books/${req.file.filename}`,
     title: req.body.title,
     author: req.body.author,
-    description: req.body.review
+    description: req.body.review,
+    uploader_id: req.payload._id,
+    uploader_name: req.payload.name, // User Avatar revisit
+    createdAt: Date.now(),
+    updatedAt: Date.now()
   });
   book.save().then(result => {
     console.log(result);
@@ -96,15 +105,67 @@ router.post('/create-new-book', upload.single('avatar'), (req, res, next) => {
   })
 })
 
+router.post('/update-book/:id', upload.single('avatar'), auth, (req, res, next) => {
+  console.log(req.file);
+
+  const url = req.protocol + '://' + req.get('host')
+  console.log(url);
+  res.setHeader('Content-Type', 'application/json');
+  // enable CORS
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'X-CUSTOM, Content-Type');
+
+
+  const formInput = { title: req.body.title,
+    author: req.body.author,
+    description: req.body.review,
+    updatedAt: Date.now()
+  };
+
+  if (!!req.file) {
+    formInput.avatar = `${url}/public/books/${req.file.filename}`;
+  }
+
+  console.log(formInput);
+
+  Book.findByIdAndUpdate({
+      _id: req.params.id
+    }, formInput, {
+      new: true
+    }, (err, result) => {
+      if (err) return res.status(500).send(err);
+      return res.send(result);
+    });
+})
+
 
 // GET All User
 router.get("/", (req, res, next) => {
-  Book.find().then(data => {
-    res.status(200).json({
-      message: "Books retrieved successfully!",
-      books: data
-    });
-  });
+  Book.find()
+    .then(data => {
+      res.status(200).json({
+        message: "Books retrieved successfully!",
+        books: data
+      });
+    })
+    .catch(err => next(err));
+});
+
+router.get("/:id", (req, res, next) => {
+  console.log(req.params.id)
+
+  Book.findById(req.params.id)
+    .then(data => {
+      if (data) {
+        res.status(200).json(data);
+      } else {
+        res.status(404).json({
+          message: "Book not found!"
+        });
+      }
+    })
+    .catch(err => next(err));
 });
 
 router.post('/login', function (req, res, next) {
@@ -128,20 +189,6 @@ router.post('/login', function (req, res, next) {
   })
   auth(req, res, next);
 });
-
-
-// GET User
-// router.get("/:id", (req, res, next) => {
-//   User.findById(req.params.id).then(data => {
-//     if (data) {
-//       res.status(200).json(post);
-//     } else {
-//       res.status(404).json({
-//         message: "User not found!"
-//       });
-//     }
-//   });
-// });
 
 
 module.exports = router;
