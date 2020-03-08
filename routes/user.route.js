@@ -2,6 +2,7 @@ let express = require('express'),
   multer = require('multer'),
   mongoose = require('mongoose'),
   passport = require('passport'),
+  im = require('imagemagick'),
   router = express.Router();
 
 var jwt = require('express-jwt');
@@ -12,6 +13,7 @@ var auth = jwt({
 
 var ctrlProfile = require('../controllers/profile');
 var ctrlAuth = require('../controllers/authentication');
+var ctrlRequest = require('../controllers/request');
 
 
 // Multer File upload settings
@@ -38,7 +40,8 @@ var upload = multer({
     fileSize: 1024 * 1024 * 5
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg") {
+    let allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (allowedTypes.indexOf(file.mimetype) !== -1) {
       cb(null, true);
     } else {
       cb(null, false);
@@ -61,10 +64,15 @@ router.put('/update', ctrlProfile.upload.single('avatar'), auth, ctrlProfile.pro
 router.post('/register', ctrlAuth.register);
 router.post('/login', ctrlAuth.login);
 
+// Book request
+router.post('/new-request', auth, ctrlRequest.requestCreate);
+router.get('/requests/:id', auth, ctrlRequest.getRequest);
+router.get('/requests', auth, ctrlRequest.getRequest);
+
 // POST User
 router.post('/create-new-book', upload.single('avatar'), auth, (req, res, next) => {
-  console.log(req.file);
-  console.log(req.payload);
+  // console.log(req.file);
+  // console.log(req.payload);
 
   const url = req.protocol + '://' + req.get('host')
   console.log(url);
@@ -73,6 +81,29 @@ router.post('/create-new-book', upload.single('avatar'), auth, (req, res, next) 
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'X-CUSTOM, Content-Type');
+
+  // im.crop({
+  //   srcPath: './public/books/' + req.file.filename,
+  //   dstPath: './public/books/thumbs/100x100/' + req.file.filename,
+  //   width: 100,
+  //   height: 100
+  // }, (err, stdout, stderr) => {
+  //   if (err) throw err;
+  //   console.log('100x100 thumbnail created');
+  // });
+
+  // var optionsObj = {
+  //   srcPath: './public/books/' + req.file.filename,
+  //   dstPath: './public/books/thumbs/100x100/' + req.file.filename,
+  //   quality: 0.6,
+  //   width: ""
+  // };
+  // im.resize(optionsObj, function (err, stdout) {
+  //   if (err) throw err;
+  //   res.json({
+  //     "message": "Resized Image successfully"
+  //   });
+  // });
 
   const book = new Book({
     _id: new mongoose.Types.ObjectId(),
@@ -117,7 +148,8 @@ router.post('/update-book/:id', upload.single('avatar'), auth, (req, res, next) 
   res.set('Access-Control-Allow-Headers', 'X-CUSTOM, Content-Type');
 
 
-  const formInput = { title: req.body.title,
+  const formInput = {
+    title: req.body.title,
     author: req.body.author,
     description: req.body.review,
     updatedAt: Date.now()
@@ -130,13 +162,13 @@ router.post('/update-book/:id', upload.single('avatar'), auth, (req, res, next) 
   console.log(formInput);
 
   Book.findByIdAndUpdate({
-      _id: req.params.id
-    }, formInput, {
-      new: true
-    }, (err, result) => {
-      if (err) return res.status(500).send(err);
-      return res.send(result);
-    });
+    _id: req.params.id
+  }, formInput, {
+    new: true
+  }, (err, result) => {
+    if (err) return res.status(500).send(err);
+    return res.send(result);
+  });
 })
 
 
@@ -153,7 +185,7 @@ router.get("/", (req, res, next) => {
 });
 
 router.get("/:id", (req, res, next) => {
-  console.log(req.params.id)
+  // console.log(req.params.id)
 
   Book.findById(req.params.id)
     .then(data => {
