@@ -5,9 +5,19 @@ let requestSchema = new Schema({
   request_time: {
     type: Date
   },
+  request_viewed: {
+    type: Boolean
+  },
   approved: {
     type: Boolean
   },
+  disapproved: {
+    type: Boolean
+  },
+  returned: {
+    type: Boolean
+  },
+  // Todo - Point to users collection
   requester: {
     type: Object
   },

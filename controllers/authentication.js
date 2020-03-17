@@ -24,7 +24,7 @@ module.exports.register = function (req, res) {
   user.lastname = req.body.lastname;
   user.email = req.body.email;
   user.phone = req.body.phone;
-  user.avatar = '';
+  // user.avatar = '';
 
   user.setPassword(req.body.password);
 

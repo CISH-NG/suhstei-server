@@ -5,6 +5,7 @@ let mongoose = require('mongoose'),
 
 // Request model
 let Request = require('../models/request');
+let User = require('../models/user');
 
 
 module.exports.requestCreate = function (req, res) {
@@ -19,7 +20,11 @@ module.exports.requestCreate = function (req, res) {
 
     const request = new Request({
       request_time: Date.now(),
+      request_viewed: false,
       approved: false,
+      disapproved: false,
+      returned: false,
+      // Todo - Point to users collection
       requester: req.body.requester,
       book_requested: req.body.book,
     });
@@ -57,11 +62,40 @@ module.exports.getRequest = function (req, res) {
       })
       .catch(err => next(err));
   } else {
+
     Request
       .find()
       .then(data => {
         res.status(200).json(data);
       })
       .catch(err => next(err));
+  }
+}
+
+module.exports.updateRequest = function (req, res) {
+
+  let requestUpdate = {
+    approved: true,
+  }
+
+
+  if (!req.payload._id) {
+    
+    res.status(401).json({
+      "message": "UnauthorizedError: private profile"
+    });
+  } else {
+    Request.findByIdAndUpdate(
+      {
+        _id: req.body._id
+      },
+      requestUpdate,
+      {
+        new: true
+      },
+      (err, result) => {
+      if (err) return res.status(500).send(err);
+      return res.send(result);
+    });
   }
 }

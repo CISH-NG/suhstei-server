@@ -66,6 +66,7 @@ router.post('/login', ctrlAuth.login);
 
 // Book request
 router.post('/new-request', auth, ctrlRequest.requestCreate);
+router.put('/update-request', auth, ctrlRequest.updateRequest);
 router.get('/requests/:id', auth, ctrlRequest.getRequest);
 router.get('/requests', auth, ctrlRequest.getRequest);
 
