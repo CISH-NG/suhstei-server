@@ -75,12 +75,14 @@ module.exports.getRequest = function (req, res) {
 module.exports.updateRequest = function (req, res) {
 
   let requestUpdate = {
-    approved: true,
+    request_viewed: req.body.request_viewed,
+    approved: req.body.approved,
+    disapproved: req.body.disapproved,
+    returned: req.body.returned,
   }
 
-
   if (!req.payload._id) {
-    
+
     res.status(401).json({
       "message": "UnauthorizedError: private profile"
     });
