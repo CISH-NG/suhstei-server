@@ -7,6 +7,9 @@ let bookSchema = new Schema({
   avatar: {
     type: String
   },
+  imageId: {
+    type: String
+  },
   title: {
     type: String
   },

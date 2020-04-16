@@ -19,17 +19,6 @@ const storage = multer.diskStorage({
   }
 });
 
-// Tinify Credentials
-tinified.key = "XZvw4rn1mykHZYw79jQSG10N11KhNGxc";
-
-// Cloudinary Credentials, Its free
-var cloudinary = require('cloudinary');
-cloudinary.config({
-  cloud_name: 'ojay-dev',
-  api_key: '559927473658689',
-  api_secret: 'zftvKIM5EL8k7pBXXA-tcidW_Zg'
-});
-
 
 // Multer Mime Type Validation
 var upload;

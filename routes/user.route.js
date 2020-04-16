@@ -3,12 +3,20 @@ let express = require('express'),
   mongoose = require('mongoose'),
   passport = require('passport'),
   im = require('imagemagick'),
+  // cloud = require('../config/cloudinaryConfig'),
   router = express.Router();
+const cloudinary = require('cloudinary').v2;
 
 var jwt = require('express-jwt');
 var auth = jwt({
   secret: 'MY_SECRET',
   userProperty: 'payload'
+});
+
+cloudinary.config({
+  cloud_name: 'ojay-dev',
+  api_key: '559927473658689',
+  api_secret: 'zftvKIM5EL8k7pBXXA-tcidW_Zg'
 });
 
 var ctrlProfile = require('../controllers/profile');
@@ -72,7 +80,7 @@ router.get('/requests', auth, ctrlRequest.getRequest);
 
 // POST User
 router.post('/create-new-book', upload.single('avatar'), auth, (req, res, next) => {
-  // console.log(req.file);
+  console.log(req.file);
   // console.log(req.payload);
 
   const url = req.protocol + '://' + req.get('host')
@@ -83,58 +91,62 @@ router.post('/create-new-book', upload.single('avatar'), auth, (req, res, next) 
   res.set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'X-CUSTOM, Content-Type');
 
-  // im.crop({
-  //   srcPath: './public/books/' + req.file.filename,
-  //   dstPath: './public/books/thumbs/100x100/' + req.file.filename,
-  //   width: 100,
-  //   height: 100
-  // }, (err, stdout, stderr) => {
-  //   if (err) throw err;
-  //   console.log('100x100 thumbnail created');
-  // });
+  let imageDetails = {
+    imageName: req.file.filename,
+    cloudImage: req.file.path,
+    imageId: ''
+  }
+  cloudinary.image("suhstei/seppfdxirmzg6b6goskp.png", )
+  cloudinary.uploader.upload(
+    imageDetails.cloudImage, {
+      folder: 'suhstei',
+      effect: "auto_color",
+      height: 200,
+      quality: "auto:eco",
+      crop: "scale",
+      fetch_format: "auto"
+    },
+    (err, image) => {
+      if (err) return res.send(err);
+      console.log('file uploaded to Cloudinary')
+      console.log(image)
 
-  // var optionsObj = {
-  //   srcPath: './public/books/' + req.file.filename,
-  //   dstPath: './public/books/thumbs/100x100/' + req.file.filename,
-  //   quality: 0.6,
-  //   width: ""
-  // };
-  // im.resize(optionsObj, function (err, stdout) {
-  //   if (err) throw err;
-  //   res.json({
-  //     "message": "Resized Image successfully"
-  //   });
-  // });
-
-  const book = new Book({
-    _id: new mongoose.Types.ObjectId(),
-    avatar: `${url}/public/books/${req.file.filename}`,
-    title: req.body.title,
-    author: req.body.author,
-    description: req.body.review,
-    uploader_id: req.payload._id,
-    uploader_name: req.payload.name, // User Avatar revisit
-    createdAt: Date.now(),
-    updatedAt: Date.now()
-  });
-  book.save().then(result => {
-    console.log(result);
-    res.status(201).json({
-      message: "Book registered successfully!",
-      bookCreated: {
-        _id: result._id,
-        avatar: result.avatar,
-        title: result.title,
-        author: result.author,
-        description: result.description,
-      }
-    })
-  }).catch(err => {
-    console.log(err),
-      res.status(500).json({
-        error: err
+      const book = new Book({
+        _id: new mongoose.Types.ObjectId(),
+        // avatar: `${url}/public/books/${req.file.filename}`,
+        avatar: image.url,
+        imageId: image.public_id,
+        title: req.body.title,
+        author: req.body.author,
+        description: req.body.review,
+        uploader_id: req.payload._id,
+        uploader_name: req.payload.name, // User Avatar revisit
+        createdAt: Date.now(),
+        updatedAt: Date.now()
       });
-  })
+
+      book.save().then(result => {
+        console.log(result);
+        res.status(201).json({
+          message: "Book registered successfully!",
+          bookCreated: {
+            _id: result._id,
+            avatar: result.avatar,
+            title: result.title,
+            author: result.author,
+            description: result.description,
+          }
+        })
+      }).catch(err => {
+        console.log(err),
+          res.status(500).json({
+            error: err
+          });
+      })
+    })
+
+
+
 })
 
 router.post('/update-book/:id', upload.single('avatar'), auth, (req, res, next) => {
