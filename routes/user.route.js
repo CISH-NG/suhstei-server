@@ -101,7 +101,7 @@ router.post('/create-new-book', upload.single('avatar'), auth, (req, res, next) 
     imageDetails.cloudImage, {
       folder: 'suhstei',
       effect: "auto_color",
-      height: 200,
+      height: 350,
       quality: "auto:eco",
       crop: "scale",
       fetch_format: "auto"
